@@ -86,7 +86,7 @@ class RequestFilter extends AbstractRequestLoggingFilter {
 
   @Override
   protected void afterRequest(HttpServletRequest request, String message) {
-    System.out.println("body from filter -> " + message);
+    //System.out.println("body from filter -> " + message);
   }
 }
 
@@ -94,13 +94,7 @@ class RequestInterceptor extends HandlerInterceptorAdapter {
   private final int PAYLOAD_SIZE = 1024;
 
   @Override
-  public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-    ContentCachingRequestWrapper wrapper = WebUtils.getNativeRequest(request, ContentCachingRequestWrapper.class);
-    return true;
-  }
-
-  @Override
-  public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+  public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
     StringBuilder msg = new StringBuilder();
     ContentCachingRequestWrapper wrapper = WebUtils.getNativeRequest(request, ContentCachingRequestWrapper.class);
     if (wrapper != null) {
@@ -112,16 +106,11 @@ class RequestInterceptor extends HandlerInterceptorAdapter {
           payload = new String(buf, 0, length, wrapper.getCharacterEncoding());
         }
         catch (UnsupportedEncodingException e) {
-          payload = "[unknown]";
+          payload = "{\"error\"}";
         }
         msg.append(payload);
       }
     }
     System.out.printf("from interceptor -> %s [ %d ]\n", msg.toString(), response.getStatus());
-  }
-
-  @Override
-  public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-
   }
 }
